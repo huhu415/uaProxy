@@ -4,19 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"uaProxy/bootstrap"
 	"uaProxy/handle"
 
 	"github.com/sirupsen/logrus"
 )
-
-var anyMethods = []string{
-	http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch,
-	http.MethodHead, http.MethodOptions, http.MethodDelete,
-	http.MethodTrace, "PROPFIND", "PROPPATCH", "MKCOL", "COPY", "MOVE", "LOCK", "UNLOCK",
-	http.MethodConnect, // 这个webdav没有
-}
 
 func main() {
 	if err := bootstrap.LoadConfig(); err != nil {
@@ -30,7 +22,7 @@ func main() {
 	}
 	defer listener.Close()
 
-	logrus.Infoln("Proxy server listening on port", bootstrap.C.RedirPort)
+	logrus.Infof("Proxy server listening on port: %d", bootstrap.C.RedirPort)
 
 	for {
 		clientConn, err := listener.Accept()
