@@ -14,8 +14,6 @@ import (
 	"github.com/v2fly/v2ray-core/v5/transport/internet/tcp"
 )
 
-const SO_ORIGINAL_DST = 80
-
 func HandleConnection(clientConn net.Conn) {
 	defer clientConn.Close()
 
