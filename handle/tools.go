@@ -11,7 +11,7 @@ var anyMethods = []string{
 	http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch,
 	http.MethodHead, http.MethodOptions, http.MethodDelete,
 	http.MethodTrace, "PROPFIND", "PROPPATCH", "MKCOL", "COPY", "MOVE", "LOCK", "UNLOCK",
-	http.MethodConnect, // 这个webdav没有
+	http.MethodConnect,
 }
 
 func isHTTP(peek []byte) bool {

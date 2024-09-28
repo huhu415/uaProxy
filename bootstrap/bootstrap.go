@@ -36,7 +36,7 @@ func LoadConfig() error {
 	}
 	viper.AddConfigPath(filepath.Dir(pathAbs))
 
-	viper.AddConfigPath("/Users/hello/Projects/UA2F-go")
+	viper.AddConfigPath("/Users/hello/Projects/uaProxy")
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("/config")
 
