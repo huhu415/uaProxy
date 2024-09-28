@@ -3,11 +3,9 @@ module uaProxy
 go 1.23.1
 
 require (
-	github.com/metacubex/mihomo v1.18.8
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.19.0
 	github.com/v2fly/v2ray-core/v5 v5.19.0
-	golang.org/x/sys v0.25.0
 )
 
 require (
@@ -29,6 +27,7 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa // indirect
+	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
