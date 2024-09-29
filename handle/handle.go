@@ -2,7 +2,6 @@ package handle
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"net"
 	"runtime"
@@ -57,7 +56,7 @@ func HandleConnection(clientConn net.Conn) {
 	serverConn.Write(buff[:realBuffSize])
 
 	if realBuffSize > 0 && isEnglishLetter(buff[0]) && isHTTP(buff[:realBuffSize]) {
-		fmt.Println("This is HTTP traffic.")
+		logrus.Info("This is HTTP traffic.")
 		scanner := bufio.NewScanner(clientConn)
 		for scanner.Scan() {
 			line := scanner.Text()
@@ -69,11 +68,11 @@ func HandleConnection(clientConn net.Conn) {
 			if strings.Contains(templine, "user-agent") {
 				line = "User-Agent: " + bootstrap.C.UA
 			}
-			logrus.Println("Received header:", line)
+			logrus.Debug("Received header:", line)
 			serverConn.Write([]byte(line + "\r\n"))
 		}
 	} else {
-		fmt.Println("This is non-HTTP traffic.")
+		logrus.Debug("This is non-HTTP traffic.")
 	}
 
 	relay(serverConn, clientConn)
