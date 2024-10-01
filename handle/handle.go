@@ -5,10 +5,8 @@ import (
 	"io"
 	"net"
 	"regexp"
-	"runtime"
 	"strconv"
 	"strings"
-	"syscall"
 	"uaProxy/bootstrap"
 
 	"github.com/sirupsen/logrus"
@@ -27,22 +25,9 @@ func HandleConnection(clientConn net.Conn) {
 	}
 	logrus.Debugf("%s, ip: %s, port: %s", d.Network, d.Address.IP().String(), d.Port)
 
-	dial := net.Dialer{
-		Control: func(network, address string, c syscall.RawConn) error {
-			return c.Control(func(fd uintptr) {
-				// 如果是linux系统，使用 syscall 设置 SO_MARK
-				if runtime.GOOS == "linux" {
-					// 使用 syscall 设置 SO_MARK
-					syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, 0xff)
-				}
-
-			})
-		},
-	}
-	serverConn, err := dial.Dial(strings.ToLower(d.Network.String()), net.JoinHostPort(d.Address.IP().String(), d.Port.String()))
-	// serverConn, err := dial.Dial(strings.ToLower(d.Network.String()), net.JoinHostPort("192.168.6.157", "1234"))
+	serverConn, err := dialDestination(d)
 	if err != nil {
-		logrus.Errorf("failed to dial destination: %v", err)
+		logrus.Error(err)
 		return
 	}
 	// defer serverConn.Close()
