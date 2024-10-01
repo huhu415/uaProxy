@@ -2,6 +2,7 @@
 
 利用clash, v2ray的方案(iptables-redir)实现对所有流量的监控,
 从而找出http流量后, 修改其中的`User-Agent`字段, 从而实现对所有http流量的`User-Agent`修改.
+![uaProxy](uaProxy.png)
 
 ## 方案
 ### 分析问题
