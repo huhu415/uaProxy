@@ -4,9 +4,7 @@ import (
 	"bufio"
 	"io"
 	"net"
-	"regexp"
-	"strconv"
-	"strings"
+	"net/http"
 	"uaProxy/bootstrap"
 
 	"github.com/sirupsen/logrus"
@@ -30,65 +28,28 @@ func HandleConnection(clientConn net.Conn) {
 		logrus.Error(err)
 		return
 	}
-	// defer serverConn.Close()
+	defer serverConn.Close()
 
-	buffSize := 10
-	buff := make([]byte, buffSize)
-	realBuffSize, err := clientConn.Read(buff)
-	if err != nil {
-		logrus.Error(err)
-		return
-	}
-	logrus.Debugf("size:%d, content:%s", realBuffSize, string(buff))
-	serverConn.Write(buff[:realBuffSize])
-
-	if realBuffSize > 0 && isEnglishLetter(buff[0]) && isHTTP(buff[:realBuffSize]) {
-		logrus.Infof("This is HTTP traffic.: %s", d.Address.IP().String())
-		// go io.Copy(clientConn, serverConn)
-
-		_, contentLength := false, 0
-		scanner := bufio.NewScanner(clientConn)
-		for scanner.Scan() {
-			line := scanner.Text()
-			if line == "" { // 空行表示请求头结束
-				serverConn.Write([]byte("\r\n"))
-				break
-			}
-
-			templine := strings.ToLower(line)
-			switch {
-			case strings.Contains(templine, "user-agent"):
-				line = "User-Agent: " + bootstrap.C.UA + "\r\n" + "Connection: close"
-			case strings.Contains(templine, "content-length"):
-				contentLength, _ = strconv.Atoi(regexp.MustCompile(`\d+`).FindString(templine))
-			case strings.Contains(templine, "connection"):
-				continue
-			}
-
-			logrus.Debug("Received header:", line)
-			serverConn.Write([]byte(line + "\r\n"))
-		}
-
-		for contentLength > 0 {
-			bodyBuff := make([]byte, 1024)
-			realBodyBuffSize, err := clientConn.Read(bodyBuff)
+	bufioReader := bufio.NewReader(clientConn)
+	peekBuff, _ := bufioReader.Peek(10)
+	logrus.Debug(string(peekBuff))
+	go io.Copy(clientConn, serverConn)
+	if len(peekBuff) > 0 && isEnglishLetter(peekBuff[0]) && isHTTP(peekBuff) {
+		logrus.Debug("this is http request")
+		for {
+			req, err := http.ReadRequest(bufioReader)
 			if err != nil {
-				logrus.Error(err)
-				break
+				return
+			}
+			logrus.Debug("catch a http request")
+			req.Header.Set("User-Agent", bootstrap.C.UA)
+			if er := req.Write(serverConn); er != nil {
+				logrus.Error(er)
+				return
 			}
 
-			serverConn.Write(bodyBuff[:realBodyBuffSize])
-			contentLength -= realBodyBuffSize
 		}
-
-		io.Copy(clientConn, serverConn)
 	} else {
-		// logrus.Debug("This is non-HTTP traffic.")
-		relay(serverConn, clientConn)
+		io.Copy(serverConn, bufioReader)
 	}
-}
-
-func relay(l, r net.Conn) {
-	go io.Copy(l, r)
-	io.Copy(r, l)
 }

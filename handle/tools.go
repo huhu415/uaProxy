@@ -3,7 +3,6 @@ package handle
 import (
 	"net"
 	"net/http"
-	"runtime"
 	"strings"
 	"syscall"
 
@@ -38,12 +37,8 @@ func dialDestination(d vnet.Destination) (net.Conn, error) {
 	dial := net.Dialer{
 		Control: func(network, address string, c syscall.RawConn) error {
 			return c.Control(func(fd uintptr) {
-				// 如果是linux系统，使用 syscall 设置 SO_MARK
-				if runtime.GOOS == "linux" {
-					// 使用 syscall 设置 SO_MARK
-					// syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, 0xff)
-				}
-
+				// 只有linux才可以使用 syscall 设置 SO_MARK, 目的是防止代理循环
+				// syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, 0xff)
 			})
 		},
 	}
