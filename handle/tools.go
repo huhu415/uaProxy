@@ -37,8 +37,8 @@ func dialDestination(d vnet.Destination) (net.Conn, error) {
 	dial := net.Dialer{
 		Control: func(network, address string, c syscall.RawConn) error {
 			return c.Control(func(fd uintptr) {
-				// 只有linux才可以使用 syscall 设置 SO_MARK, 目的是防止代理循环
-				// syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, 0xff)
+				// 只有linux才可以使用 syscall 设置 SO_MARK, 目的是防止设置了本机透明代理时, 代理循环
+				syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_MARK, 0xff)
 			})
 		},
 	}

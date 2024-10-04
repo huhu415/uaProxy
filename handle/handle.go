@@ -43,11 +43,11 @@ func HandleConnection(clientConn net.Conn) {
 			}
 			logrus.Debug("catch a http request")
 			req.Header.Set("User-Agent", bootstrap.C.UA)
+
 			if er := req.Write(serverConn); er != nil {
 				logrus.Error(er)
 				return
 			}
-
 		}
 	} else {
 		io.Copy(serverConn, bufioReader)
