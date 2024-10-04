@@ -14,3 +14,4 @@ $RECYCLE.BIN/
 .idea
 docker-compose.yml
 uaProxy
+dist/
