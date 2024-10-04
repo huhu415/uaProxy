@@ -12,6 +12,7 @@
 ## 使用方法
 1. 网关设备开启 IP 转发。
 在 `/etc/sysctl.conf` 文件添加一行 `net.ipv4.ip_forward=1` ，执行下列命令生效：`sysctl -p`
+
 2. 为了实现所有TCP流量会经过uaProxy, iptables要这样设置
 ```sh
 iptables -t nat -N uaProxy # 新建一个名为 uaProxy 的链
@@ -23,40 +24,14 @@ iptables -t nat -A PREROUTING -p tcp -j uaProxy # 对局域网其他设备进行
 iptables -t nat -A OUTPUT -p tcp -j uaProxy # 对本机进行透明代理
 ```
 
+3. 运行uaProxy(建议uaProxy和config.yaml在一个文件夹下面)
+```sh
+./uaProxy &
+```
 > ‼️注意, 因为是利用了iptables的REDIRECT功能, 所以不能和clash, v2ray等软件同时使用, 会有冲突.
 
 > 但这样做也更纯净, 性能最快, 我觉得应该是这个需求的最佳实现方案了.
 
+------------------------------------------
 
------------------
-
-## tips
-
-### 校园网多设备检测手段
-- [x] TTL
-  - ```sh
-    iptables -t mangle -A POSTROUTING -j TTL --ttl-set 64 # 修改出口 TTL 为 64
-    ```
-- [x] 时间戳
-  - ```sh
-    iptables -t nat -N ntp_force_local
-    iptables -t nat -I PREROUTING -p udp --dport 123 -j ntp_force_local
-    iptables -t nat -A ntp_force_local -d 0.0.0.0/8 -j RETURN
-    iptables -t nat -A ntp_force_local -d 127.0.0.0/8 -j RETURN
-    iptables -t nat -A ntp_force_local -d 192.168.0.0/16 -j RETURN
-    iptables -t nat -A ntp_force_local -s 192.168.0.0/16 -j DNAT --to-destination 192.168.1.1 # 根据你路由器的地址修改
-    # 同时记得修改ntp服务器地址, 可以选ntp.aliyun.com, time1.cloud.tencent.com, time.ustc.edu.cn, cn.pool.ntp.org
-    ```
-- [x] UA
-  - [本项目](https://github.com/huhu415/uaProxy)
-- [ ] IP-ID
-  - 一般学校好像不会检测这个, 以后再说
-- [ ] DPI (可能暂时无解)
-  - 可能要全局代理, 以后再说
-
-### 防 DNS 污染(可有可无)
-```sh
-# 防 DNS 污染, 全部走本机的dns查询
-iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 53
-iptables -t nat -A PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 53
-```
+[FAQ](FAQ.md)

@@ -1,7 +1,7 @@
 # go build -ldflags "-X main.build=`git rev-parse HEAD`
 LDFLAGS := -s -w
 
-VERSION := 1.0.0
+VERSION ?= 1.0.0
 BUILD_DATE := $(shell date +%Y-%m-%dT%H:%M:%S)
 GIT_COMMIT := $(shell git rev-parse --short HEAD)  $(shell git log -1 --pretty=%s)
 

@@ -1,0 +1,75 @@
+# Make sure to check the documentation at https://goreleaser.com
+version: 2
+
+env:
+  - GIT_URL=https://github.com/huhu415/uaProxy
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - "386"
+      - amd64
+      - arm
+      - arm64
+      - loong64 # 龙芯
+      - mips # 32位的大端序MIPS处理器
+      - mipsle # 32位的小端序MIPS处理器
+      - mips64 # 64位的大端序MIPS处理器
+      - mips64le # 64位的小端序MIPS处理器
+      - ppc64 # 64位的大端序PowerPC处理器
+      - ppc64le # 64位的小端序PowerPC处理器
+      - riscv64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version={{ .Version }}
+      - -X main.buildDate={{ .Date }}
+      - -X main.gitCommit={{ .Commit }}
+
+archives:
+  - format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+      - FAQ.md
+      - config.yaml
+checksum:
+  name_template: "checksums.txt"
+
+# https://goreleaser.com/customization/changelog/
+changelog:
+  disable: true
+
+# https://goreleaser.com/customization/release
+release:
+  header: |
+    ## 🥳Changes
+
+    第一版发布，基本功能完成，已经在寝室开始用3天了。
+
+    ```sh
+    tar -xzvf uaProxy-linux-xxxxxxx.tar.gz # 解压
+    ```
+
+  footer: |
+    **[FAQ](https://github.com/huhu415/uaProxy/blob/main/Release.md)**
