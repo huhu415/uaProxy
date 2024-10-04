@@ -4,15 +4,10 @@
 从而找出http流量后, 修改其中的`User-Agent`字段, 从而实现对所有http流量的`User-Agent`修改.
 ![uaProxy](uaProxy.png)
 
-## 方案
-### 分析问题
-http明文一般都是http/1.1, http/1.0. 所有要针对这两个做调整
-- http/1.0: 由于http/1.0是短连接, 所有请求头就只有在tcp握手之后就发送了
-- http/1.1: 由于有长连接, 所有在握手之后会发一次, 但下次再发就不会再握手了 _要解决这个问题_
+## 代码思路
+流量分为http和非http两种, 非http流量直接转发, http流量则可以通过看前几个字节判断是否是http流量.
 
-### 解决办法
-让http/1.1加上`Connection: close`字段, 这样就会变成http/1.0的短连接, 但这个方案会依靠服务器的支持, 不是所有服务器都支持
-但我测试下来, 发现所有服务器都支持, 没找到没改成功的例子. 暂时感觉这个方案可行, 我先放我寝室试一段时间再说. 因为这个方案的性能最好的.
+如果是http流量, 则利用go的官方的webServer的方法, 循环使用`http.ReadRequest`读取http请求, 从中找到`User-Agent`字段, 修改后再写回.
 
 ## 使用方法
 1. 网关设备开启 IP 转发。
@@ -37,28 +32,31 @@ iptables -t nat -A OUTPUT -p tcp -j uaProxy # 对本机进行透明代理
 
 ## tips
 
-一般使用uaProxy都是为了躲避校园网的多设备检测, 根据需要加上以下规则
+### 校园网多设备检测手段
+- [x] TTL
+  - ```sh
+    iptables -t mangle -A POSTROUTING -j TTL --ttl-set 64 # 修改出口 TTL 为 64
+    ```
+- [x] 时间戳
+  - ```sh
+    iptables -t nat -N ntp_force_local
+    iptables -t nat -I PREROUTING -p udp --dport 123 -j ntp_force_local
+    iptables -t nat -A ntp_force_local -d 0.0.0.0/8 -j RETURN
+    iptables -t nat -A ntp_force_local -d 127.0.0.0/8 -j RETURN
+    iptables -t nat -A ntp_force_local -d 192.168.0.0/16 -j RETURN
+    iptables -t nat -A ntp_force_local -s 192.168.0.0/16 -j DNAT --to-destination 192.168.1.1 # 根据你路由器的地址修改
+    # 同时记得修改ntp服务器地址, 可以选ntp.aliyun.com, time1.cloud.tencent.com, time.ustc.edu.cn, cn.pool.ntp.org
+    ```
+- [x] UA
+  - [本项目](https://github.com/huhu415/uaProxy)
+- [ ] IP-ID
+  - 一般学校好像不会检测这个, 以后再说
+- [ ] DPI (可能暂时无解)
+  - 可能要全局代理, 以后再说
+
+### 防 DNS 污染(可有可无)
 ```sh
 # 防 DNS 污染, 全部走本机的dns查询
 iptables -t nat -A PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 53
 iptables -t nat -A PREROUTING -p tcp --dport 53 -j REDIRECT --to-ports 53
-
-# 修改出口 TTL 为 64
-iptables -t mangle -A POSTROUTING -j TTL --ttl-set 64
-
-# 防时钟偏移检测, 防时间戳检测
-iptables -t nat -N ntp_force_local
-iptables -t nat -I PREROUTING -p udp --dport 123 -j ntp_force_local
-iptables -t nat -A ntp_force_local -d 0.0.0.0/8 -j RETURN
-iptables -t nat -A ntp_force_local -d 127.0.0.0/8 -j RETURN
-iptables -t nat -A ntp_force_local -d 192.168.0.0/16 -j RETURN
-iptables -t nat -A ntp_force_local -s 192.168.0.0/16 -j DNAT --to-destination 192.168.1.1 # 根据你路由器的地址修改
-
-# 差一个IPID检测, 这个先放在这里, 以后再说
 ```
-
-### NTP服务器地址
-- ntp.aliyun.com
-- time1.cloud.tencent.com
-- time.ustc.edu.cn
-- cn.pool.ntp.org
