@@ -52,7 +52,6 @@ archives:
       - LICENSE
       - README.md
       - FAQ.md
-      - config.yaml
 checksum:
   name_template: "checksums.txt"
 
@@ -72,4 +71,4 @@ release:
     ```
 
   footer: |
-    **[FAQ](https://github.com/huhu415/uaProxy/blob/main/Release.md)**
+    **[FAQ](FAQ.md)**

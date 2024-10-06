@@ -1,13 +1,13 @@
 # uaProxy
 
 利用clash, v2ray的方案(iptables-redir)实现对所有流量的监控,
-从而找出http流量后, 修改其中的`User-Agent`字段, 从而实现对所有http流量的`User-Agent`修改.
+找出http流量后, 修改其中的`User-Agent`字段, 从而实现对所有http流量的`User-Agent`修改.
 ![uaProxy](uaProxy.png)
 
 ## 代码思路
 流量分为http和非http两种, 非http流量直接转发, http流量则可以通过看前几个字节判断是否是http流量.
 
-如果是http流量, 则利用go的官方的webServer的方法, 循环使用`http.ReadRequest`读取http请求, 从中找到`User-Agent`字段, 修改后再写回.
+如果是http流量, 则利用go官方的webServer的实现方法, 循环使用`http.ReadRequest()`读取http请求, 从中找到`User-Agent`字段, 修改后再写回.
 
 ## 使用方法
 1. 网关设备开启 IP 转发。

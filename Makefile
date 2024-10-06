@@ -18,3 +18,9 @@ build:
 # debug: debug
 debug:
 	@CompileDaemon -build="make build" -command="./uaProxy --debug"
+
+clean:
+	@rm uaProxy
+	@rm -rf dist
+
+.PHONY: debug clean

@@ -5,9 +5,9 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"uaProxy/bootstrap"
 
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"github.com/v2fly/v2ray-core/v5/transport/internet/tcp"
 )
 
@@ -42,7 +42,7 @@ func HandleConnection(clientConn net.Conn) {
 				return
 			}
 			logrus.Debug("catch a http request")
-			req.Header.Set("User-Agent", bootstrap.C.UA)
+			req.Header.Set("User-Agent", viper.GetString("User-Agent"))
 
 			if er := req.Write(serverConn); er != nil {
 				logrus.Error(er)
