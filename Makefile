@@ -23,4 +23,8 @@ clean:
 	@rm uaProxy
 	@rm -rf dist
 
+check:
+	gofumpt -l -w .
+	golangci-lint run
+
 .PHONY: debug clean
