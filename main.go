@@ -19,7 +19,11 @@ func main() {
 	defer cancel()
 
 	bootstrap.LoadConfig()
-	bootstrap.NewParserRecord(ctx, viper.GetString("stats-config"))
+	if viper.GetBool("stats") {
+		p := viper.GetString("stats-config")
+		fmt.Printf("path: \033[1;34m%s\033[0m, start recording...\n", p)
+		bootstrap.NewParserRecord(ctx, p)
+	}
 
 	go server()
 

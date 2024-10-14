@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -28,8 +29,9 @@ const TIMESTAMPFORMAT = "2006-01-02 15:04:05"
 var pr *ParserRecord
 
 type ParserRecord struct {
-	record   map[string]*atomic.Int64
-	filepath string
+	record    sync.Map // [string]*atomic.Int64
+	filepath  string
+	startTime time.Time
 }
 
 func GiveParserRecord() *ParserRecord {
@@ -38,11 +40,13 @@ func GiveParserRecord() *ParserRecord {
 
 func NewParserRecord(ctx context.Context, filePath string) {
 	pr = &ParserRecord{
-		record:   make(map[string]*atomic.Int64),
-		filepath: filePath,
+		record:    sync.Map{},
+		filepath:  filePath,
+		startTime: time.Now(),
 	}
 	go func() {
-		ticker := time.NewTicker(5 * time.Minute)
+		logrus.Debug("NewParserRecord finish")
+		ticker := time.NewTicker(1 * time.Minute)
 		defer ticker.Stop()
 		for {
 			select {
@@ -57,13 +61,14 @@ func NewParserRecord(ctx context.Context, filePath string) {
 }
 
 func (u *ParserRecord) ParserAndRecord(uaString string) {
+	if !viper.GetBool("stats") {
+		return
+	}
 	ua := useragent.Parse(uaString)
 
-	deviceKey := ua.OS + " " + ua.Device
-	if _, exists := u.record[deviceKey]; !exists {
-		u.record[deviceKey] = &atomic.Int64{}
-	}
-	u.record[deviceKey].Add(1)
+	deviceKey := ua.OS + "-" + ua.OSVersion + " " + ua.Device
+	val, _ := u.record.LoadOrStore(deviceKey, &atomic.Int64{})
+	val.(*atomic.Int64).Add(1)
 }
 
 // 使用这个函数定期把统计信息写入日志文件里面
@@ -71,7 +76,7 @@ func (u *ParserRecord) WriteLog() {
 	// 打开或创建文件
 	file, err := os.Create(u.filepath)
 	if err != nil {
-		fmt.Println("Error creating file:", err)
+		logrus.Errorln("Error creating file:", err)
 		return
 	}
 	defer file.Close()
@@ -82,23 +87,27 @@ func (u *ParserRecord) WriteLog() {
 
 	// 写入表头，并对齐列宽
 	currentTime := time.Now().Format(TIMESTAMPFORMAT)
-	_, err = writer.WriteString(fmt.Sprintf("%-50s | %-50s\n", "Current Time", currentTime))
+	startTime := u.startTime.Format(TIMESTAMPFORMAT)
+	_, err = writer.WriteString(fmt.Sprintf("%-50s to %-50s\n", startTime, currentTime))
 	_, err = writer.WriteString(fmt.Sprintf("%-50s | %-50s\n", "Key", "Value"))
 	_, err = writer.WriteString(fmt.Sprintf("%s\n", strings.Repeat("-", 100)))
 	if err != nil {
-		fmt.Println("Error writing to file:", err)
+		logrus.Errorln("Error writing to file:", err)
 		return
 	}
 
-	// 遍历 map 并写入键值对，每列宽度固定，左对齐
-	for key, value := range u.record {
-		line := fmt.Sprintf("%-50s | %-50d\n", key, value.Load())
+	// 遍历 sync.Map 并写入键值对，每列宽度固定，左对齐
+	u.record.Range(func(key, value interface{}) bool {
+		k := key.(string)
+		v := value.(*atomic.Int64)
+		line := fmt.Sprintf("%-50s | %-50d\n", k, v.Load())
 		_, err := writer.WriteString(line)
 		if err != nil {
-			fmt.Println("Error writing to file:", err)
-			return
+			logrus.Errorln("Error writing to file:", err)
+			return false // 返回 false 以停止迭代
 		}
-	}
+		return true // 返回 true 以继续迭代
+	})
 
 	logrus.Debug("Data successfully recorded to file.")
 }

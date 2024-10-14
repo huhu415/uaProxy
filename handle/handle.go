@@ -45,6 +45,7 @@ func HandleConnection(clientConn net.Conn) {
 			}
 
 			if ua := req.Header.Get("User-Agent"); ua != "" {
+				logrus.Debug(ua)
 				bootstrap.GiveParserRecord().ParserAndRecord(ua)
 			}
 			req.Header.Set("User-Agent", viper.GetString("User-Agent"))

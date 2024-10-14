@@ -3,6 +3,7 @@ version: 2
 
 env:
   - GIT_URL=https://github.com/huhu415/uaProxy
+  - TZ=Asia/Shanghai
 before:
   hooks:
     # You may remove this if you don't use go modules.
@@ -64,7 +65,9 @@ release:
   header: |
     ## 🥳Changes
 
-    第一版发布，基本功能完成，已经在寝室开始用3天了。
+    - 增加统计选项, 可以显示不同设备的修改ua次数
+    - 删除配置文件, 变得更简洁了
+    - 已经用了20多天了, 只是晚上人多用的时候随机有点卡, 怀疑是校园网问题
 
     ```sh
     tar -xzvf uaProxy-linux-xxxxxxx.tar.gz # 解压

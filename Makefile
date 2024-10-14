@@ -17,7 +17,7 @@ build:
 
 # debug: debug
 debug:
-	@CompileDaemon -build="make build" -command="./uaProxy --debug"
+	@CompileDaemon -build="make build" -command="./uaProxy --debug --stats"
 
 clean:
 	@rm uaProxy
