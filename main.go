@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net"
+	"os"
+	"os/signal"
 
 	"uaProxy/bootstrap"
 	"uaProxy/handle"
@@ -12,8 +15,22 @@ import (
 )
 
 func main() {
-	bootstrap.LoadConfig()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
+	bootstrap.LoadConfig()
+	bootstrap.NewParserRecord(ctx, viper.GetString("stats-config"))
+
+	go server()
+
+	// 监听退出信号
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	logrus.Infof("Shutting down server...")
+}
+
+func server() {
 	// 监听代理端口
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", viper.GetInt("redir-port")))
 	if err != nil {
