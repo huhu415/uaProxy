@@ -65,9 +65,8 @@ release:
   header: |
     ## 🥳Changes
 
-    - 增加统计选项, 可以显示不同设备的修改ua次数
-    - 删除配置文件, 变得更简洁了
-    - 已经用了20多天了, 只是晚上人多用的时候随机有点卡, 怀疑是校园网问题
+    - 完善统计功能, 如果开启统计功能, 只会在检测到UA特征时才会修改UA, 否则不会修改UA
+    - 统计文件`stats-config.csv`ua字符串前有`**uaProxy**`代表已经检测到特征.
 
     ```sh
     tar -xzvf uaProxy-linux-xxxxxxx.tar.gz # 解压
