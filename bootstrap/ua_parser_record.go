@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -13,8 +12,6 @@ import (
 
 	"github.com/mileusna/useragent"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 )
 
 // 版本信息version information
@@ -61,7 +58,7 @@ func NewParserRecord(ctx context.Context, filePath string) {
 }
 
 func (u *ParserRecord) ParserAndRecord(uaString string) {
-	if !viper.GetBool("stats") {
+	if !C.Stats {
 		return
 	}
 	ua := useragent.Parse(uaString)
@@ -110,51 +107,4 @@ func (u *ParserRecord) WriteLog() {
 	})
 
 	logrus.Debug("Data successfully recorded to file.")
-}
-
-func LoadConfig() {
-	parseFlag()
-	initLog()
-	logrus.SetReportCaller(true)
-}
-
-func parseFlag() {
-	exePath, err := os.Executable()
-	if err != nil {
-		panic(err)
-	}
-	csvPath := filepath.Join(filepath.Dir(exePath), "stats-config.csv")
-
-	pflag.String("redir-port", "12345", "listen address")
-	pflag.String("User-Agent", "fffffffffffffff", "User-Agent value")
-	pflag.Bool("debug", false, "debug mode")
-	pflag.Bool("stats", false, "enable statistics collection")
-	pflag.String("stats-config", csvPath, "configuration file")
-	pflag.BoolP("version", "v", false, "version information")
-	pflag.CommandLine.SortFlags = false
-	pflag.Parse()
-	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
-		panic(err)
-	}
-
-	if viper.GetBool("version") {
-		fmt.Printf("version:\033[1;34m%s\033[0m\n", Version)
-		fmt.Printf("buildDate:\033[1;34m%s\033[0m\n", BuildDate)
-		fmt.Printf("gitCommit:\033[1;34m%s\033[0m\n", GitCommit)
-		os.Exit(0)
-	}
-}
-
-func initLog() {
-	logrus.SetFormatter(&logrus.TextFormatter{
-		ForceColors:     true,
-		FullTimestamp:   true,
-		TimestampFormat: TIMESTAMPFORMAT,
-	})
-	logrus.SetOutput(os.Stdout)
-	if viper.GetBool("debug") {
-		logrus.SetLevel(logrus.DebugLevel)
-	} else {
-		logrus.SetLevel(logrus.InfoLevel)
-	}
 }

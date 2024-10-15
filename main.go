@@ -11,7 +11,6 @@ import (
 	"uaProxy/handle"
 
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 func main() {
@@ -19,13 +18,13 @@ func main() {
 	defer cancel()
 
 	bootstrap.LoadConfig()
-	if viper.GetBool("stats") {
-		p := viper.GetString("stats-config")
+	if bootstrap.C.Stats {
+		p := bootstrap.C.StatsConfig
 		fmt.Printf("path: \033[1;34m%s\033[0m, start recording...\n", p)
 		bootstrap.NewParserRecord(ctx, p)
 	}
 
-	go server()
+	go server(ctx)
 
 	// 监听退出信号
 	quit := make(chan os.Signal, 1)
@@ -34,23 +33,29 @@ func main() {
 	logrus.Infof("Shutting down server...")
 }
 
-func server() {
+func server(ctx context.Context) {
 	// 监听代理端口
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", viper.GetInt("redir-port")))
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", bootstrap.C.RedirPort))
 	if err != nil {
 		logrus.Fatalf("Error starting server: %v", err)
 	}
 	defer listener.Close()
 
 	fmt.Printf("Proxy server listening on port: \033[1;34m%d\033[0m, UA is set to \033[1;34m%s\033[0m\n",
-		viper.GetInt("redir-port"), viper.GetString("User-Agent"))
+		bootstrap.C.RedirPort, bootstrap.C.UserAgent)
 
 	for {
-		clientConn, err := listener.Accept()
-		if err != nil {
-			logrus.Error("Error accepting connection:", err)
-			continue
+		select {
+		case <-ctx.Done():
+			logrus.Info("Shutting down server...")
+			return
+		default:
+			clientConn, err := listener.Accept()
+			if err != nil {
+				logrus.Error("Error accepting connection:", err)
+				continue
+			}
+			go handle.HandleConnection(clientConn)
 		}
-		go handle.HandleConnection(clientConn)
 	}
 }
