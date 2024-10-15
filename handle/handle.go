@@ -45,9 +45,10 @@ func HandleConnection(clientConn net.Conn) {
 
 			if ua := req.Header.Get("User-Agent"); ua != "" {
 				logrus.Debug(ua)
-				bootstrap.GiveParserRecord().ParserAndRecord(ua)
+				if bootstrap.GiveParserRecord().ParserAndRecord(ua) {
+					req.Header.Set("User-Agent", bootstrap.C.UserAgent)
+				}
 			}
-			req.Header.Set("User-Agent", bootstrap.C.UserAgent)
 
 			if er := req.Write(serverConn); er != nil {
 				logrus.Error(er)

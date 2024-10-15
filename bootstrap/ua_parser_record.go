@@ -48,28 +48,36 @@ func NewParserRecord(ctx context.Context, filePath string) {
 		for {
 			select {
 			case <-ctx.Done():
-				pr.WriteLog() // 最后一次写入日志
+				pr.writeLog() // 最后一次写入日志
 				return
 			case <-ticker.C:
-				pr.WriteLog()
+				pr.writeLog()
 			}
 		}
 	}()
 }
 
-func (u *ParserRecord) ParserAndRecord(uaString string) {
+// bool represent whether the uaString have feature
+func (u *ParserRecord) ParserAndRecord(uaString string) bool {
 	if !C.Stats {
-		return
+		return true
 	}
-	ua := useragent.Parse(uaString)
 
-	deviceKey := ua.OS + "-" + ua.OSVersion + " " + ua.Device
-	val, _ := u.record.LoadOrStore(deviceKey, &atomic.Int64{})
-	val.(*atomic.Int64).Add(1)
+	ua := useragent.Parse(uaString)
+	if ua.OS != "" || ua.OSVersion != "" || ua.Device != "" {
+		deviceKey := fmt.Sprintf("**uaProxy** %s %s %s", ua.OS, ua.OSVersion, ua.Device)
+		val, _ := u.record.LoadOrStore(deviceKey, &atomic.Int64{})
+		val.(*atomic.Int64).Add(1)
+		return true
+	} else {
+		val, _ := u.record.LoadOrStore(uaString, &atomic.Int64{})
+		val.(*atomic.Int64).Add(1)
+		return false
+	}
 }
 
 // 使用这个函数定期把统计信息写入日志文件里面
-func (u *ParserRecord) WriteLog() {
+func (u *ParserRecord) writeLog() {
 	// 打开或创建文件
 	file, err := os.Create(u.filepath)
 	if err != nil {
