@@ -11,6 +11,7 @@ $RECYCLE.BIN/
 .Trashes
 
 # Project
+*.csv
 .idea
 docker-compose.yml
 uaProxy

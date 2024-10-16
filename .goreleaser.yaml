@@ -52,7 +52,8 @@ archives:
     files:
       - LICENSE
       - README.md
-      - FAQ.md
+      - assets/FAQ.md
+      - assets/uaProxy-openwrt
 checksum:
   name_template: "checksums.txt"
 
@@ -73,4 +74,4 @@ release:
     ```
 
   footer: |
-    **[FAQ](FAQ.md)**
+    **[FAQ](assets/FAQ.md)**
