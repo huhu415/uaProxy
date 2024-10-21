@@ -13,18 +13,7 @@
 1. 网关设备开启 IP 转发。
 在 `/etc/sysctl.conf` 文件添加一行 `net.ipv4.ip_forward=1` ，执行下列命令生效：`sysctl -p`
 
-2. 为了实现所有TCP流量会经过uaProxy, iptables要这样设置
-```sh
-iptables -t nat -N uaProxy # 新建一个名为 uaProxy 的链
-iptables -t nat -A uaProxy -d 192.168.0.0/16 -j RETURN # 直连 192.168.0.0/16
-iptables -t nat -A uaProxy -p tcp -j RETURN -m mark --mark 0xff
-# 直连 SO_MARK 为 0xff 的流量(0xff 是 16 进制数，数值上等同与上面配置的 255)，此规则目的是避免代理本机(网关)流量出现回环问题
-iptables -t nat -A uaProxy -p tcp -j REDIRECT --to-ports 12345 # 其余流量转发到 12345 端口（即 uaProxy默认开启的redir-port）
-iptables -t nat -A PREROUTING -p tcp -j uaProxy # 对局域网其他设备进行透明代理
-iptables -t nat -A OUTPUT -p tcp -j uaProxy # 对本机进行透明代理, 可以不加
-```
-
-3. 运行uaProxy (所有linux都可以用, 这里详细讲openWrt)
+2. 运行uaProxy (所有linux都可以用, 这里详细讲openWrt)
   - 脚本
     1. 执行``
   - 手动
@@ -35,6 +24,17 @@ iptables -t nat -A OUTPUT -p tcp -j uaProxy # 对本机进行透明代理, 可�
       - 执行`/etc/init.d/uaProxy-openwrt enable`, 开机自启
       - 执行`/etc/init.d/uaProxy-openwrt start`, 启动服务
       - (可选)执行`logread | grep uaProxy` 查看日志; 同时也可以登陆web页面, 在`状态-系统日志`里面看
+
+3. 为了实现所有TCP流量会经过uaProxy, iptables要这样设置
+```sh
+iptables -t nat -N uaProxy # 新建一个名为 uaProxy 的链
+iptables -t nat -A uaProxy -d 192.168.0.0/16 -j RETURN # 直连 192.168.0.0/16
+iptables -t nat -A uaProxy -p tcp -j RETURN -m mark --mark 0xff
+# 直连 SO_MARK 为 0xff 的流量(0xff 是 16 进制数，数值上等同与上面配置的 255)，此规则目的是避免代理本机(网关)流量出现回环问题
+iptables -t nat -A uaProxy -p tcp -j REDIRECT --to-ports 12345 # 其余流量转发到 12345 端口（即 uaProxy默认开启的redir-port）
+iptables -t nat -A PREROUTING -p tcp -j uaProxy # 对局域网其他设备进行透明代理
+iptables -t nat -A OUTPUT -p tcp -j uaProxy # 对本机进行透明代理, 可以不加
+```
 
 ### 参数说明:
 `--stats` 开启统计信息
