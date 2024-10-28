@@ -41,20 +41,22 @@ func NewParserRecord(ctx context.Context, filePath string) {
 		filepath:  filePath,
 		startTime: time.Now(),
 	}
-	go func() {
-		logrus.Debug("NewParserRecord finish")
-		ticker := time.NewTicker(1 * time.Minute)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				pr.writeLog() // 最后一次写入日志
-				return
-			case <-ticker.C:
-				pr.writeLog()
-			}
+	go startTicker(ctx)
+}
+
+func startTicker(ctx context.Context) {
+	logrus.Debug("NewParserRecord finish")
+	ticker := time.NewTicker(1 * time.Minute)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			pr.writeLog() // 最后一次写入日志
+			return
+		case <-ticker.C:
+			pr.writeLog()
 		}
-	}()
+	}
 }
 
 // bool represent whether the uaString have feature
