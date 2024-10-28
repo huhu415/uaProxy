@@ -24,12 +24,12 @@ type Config struct {
 var C Config
 
 func LoadConfig() {
-	parseFlag()
+	parseFlags()
 	initLog()
 	logrus.SetReportCaller(true)
 }
 
-func parseFlag() {
+func parseFlags() {
 	exePath, err := os.Executable()
 	if err != nil {
 		panic(err)
