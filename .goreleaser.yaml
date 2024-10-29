@@ -37,18 +37,12 @@ builds:
 
 archives:
   - format: tar.gz
+    wrap_in_directory: true # wrap the archive in a directory named after the project
     # this name template makes the OS and Arch compatible with the results of `uname`.
     name_template: >-
       {{ .ProjectName }}_
       {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
-    # use zip for windows archives
-    format_overrides:
-      - goos: windows
-        format: zip
+      {{- .Arch }}
     files:
       - LICENSE
       - README.md
@@ -66,8 +60,7 @@ release:
   header: |
     ## 🥳Changes
 
-    - 完善统计功能, 如果开启统计功能, 只会在检测到UA特征时才会修改UA, 否则不会修改UA
-    - 统计文件`stats-config.csv`ua字符串前有`**uaProxy**`代表已经检测到特征.
+    - 增加自动安装脚本, 一键安装
 
     ```sh
     tar -xzvf uaProxy-linux-xxxxxxx.tar.gz # 解压

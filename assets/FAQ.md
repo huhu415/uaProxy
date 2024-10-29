@@ -14,7 +14,7 @@
 - **ppc64**: 64位的大端序PowerPC处理器
 - **ppc64le**: 64位的小端序PowerPC处理器
 
-> 注意, 所有Assets都是Linux版本的, darwin,windows,freebsd等等请自行编译
+> 注意, 所有Assets都是Linux版本的, darwin,windows,freebsd等等没有iptables, 无法使用
 
 ### 我是路由器, 选择哪个版本？
 

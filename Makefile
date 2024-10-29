@@ -24,4 +24,7 @@ check:
 	gofumpt -l -w .
 	golangci-lint run
 
+goreleaser-check:
+	goreleaser release --snapshot --clean
+
 .PHONY: debug clean check

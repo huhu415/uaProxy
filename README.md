@@ -10,14 +10,12 @@
 如果是http流量, 则利用go官方的webServer的实现方法, 循环使用`http.ReadRequest()`读取http请求, 从中找到`User-Agent`字段, 修改后再写回.
 
 ## 使用方法
+### 手动安装
 1. 网关设备开启 IP 转发。
 在 `/etc/sysctl.conf` 文件添加一行 `net.ipv4.ip_forward=1` ，执行下列命令生效：`sysctl -p`
 
 2. 运行uaProxy (所有linux都可以用, 这里详细讲openWrt)
-  - 脚本
-    1. 执行``
-  - 手动
-    - 下载[相应](https://github.com/huhu415/uaProxy/releases)的压缩包, 解压后
+    - 下载[相应](https://github.com/huhu415/uaProxy/releases)的压缩包, `tar -xzvf uaProxy-xxx-xxx`解压后
       - 把可执行程序放到`/usr/sbin`目录里面
       - 把[脚本文件](assets/uaProxy-openwrt)放到`/etc/init.d`目录里面
     - 执行`chmod +x /etc/init.d/uaProxy-openwrt`, 赋予执行权限
@@ -35,6 +33,12 @@ iptables -t nat -A uaProxy -p tcp -j REDIRECT --to-ports 12345 # 其余流量转
 iptables -t nat -A PREROUTING -p tcp -j uaProxy # 对局域网其他设备进行透明代理
 iptables -t nat -A OUTPUT -p tcp -j uaProxy # 对本机进行透明代理, 可以不加
 ```
+
+### 脚本安装
+```sh
+curl https://raw.githubusercontent.com/huhu415/uaProxy/refs/heads/main/assets/autoInstall.sh | sh
+```
+> 脚本安装只支持`小端`架构, 因为我还没搞明白怎么检测`大端`架构, `大端`机器太少了.
 
 ### 参数说明:
 `--stats` 开启统计信息
