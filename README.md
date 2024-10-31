@@ -50,5 +50,6 @@ curl https://raw.githubusercontent.com/huhu415/uaProxy/refs/heads/main/assets/au
 
 > ‼️注意, 因为是利用了iptables的REDIRECT功能, 所以不能和clash, v2ray等软件同时使用, 会有冲突.
 > 但这样做也更纯净, 性能最快, 我觉得应该是这个需求的最佳实现方案了.
+> 虽然说不需要解决ipid的反检测, 但本项目会自然而然的解决ipid的反检测.
 
 [FAQ](assets/FAQ.md)

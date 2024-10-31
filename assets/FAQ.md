@@ -30,18 +30,10 @@
     iptables -t mangle -A POSTROUTING -j TTL --ttl-set 64 # 修改出口 TTL 为 64
     ```
 - [x] 时间戳
-  - ```sh
-    iptables -t nat -N ntp_force_local
-    iptables -t nat -I PREROUTING -p udp --dport 123 -j ntp_force_local
-    iptables -t nat -A ntp_force_local -d 0.0.0.0/8 -j RETURN
-    iptables -t nat -A ntp_force_local -d 127.0.0.0/8 -j RETURN
-    iptables -t nat -A ntp_force_local -d 192.168.0.0/16 -j RETURN
-    iptables -t nat -A ntp_force_local -s 192.168.0.0/16 -j DNAT --to-destination 192.168.1.1 # 根据你路由器的地址修改
-    # 同时记得修改ntp服务器地址, 可以选ntp.aliyun.com, time1.cloud.tencent.com, time.ustc.edu.cn, cn.pool.ntp.org
-    ```
+  - 这种检测方式应该只存在于paper上, 没有用这种方式检测了, 我实验过, 就算是一台机器, 也会有时间不同的情况, 所以这种方式不太靠谱
 - [x] UA
   - [本项目](https://github.com/huhu415/uaProxy)
-- [ ] IP-ID
-  - 一般学校好像不会检测这个, 以后再说
+- [x] IP-ID
+  - 这种检测方式也只存在于paper上, 因为我也实验过, 就算是一台机器, 也不是单调递增的, 不过就算没有这种检测方式[本项目](https://github.com/huhu415/uaProxy)天生就没有这个问题.
 - [ ] DPI (可能暂时无解)
-  - 可能要全局代理, 以后再说
+  - 只能用规避gfw的方式, 可能要全局代理, 比如使用`v2ray`. 以后再说

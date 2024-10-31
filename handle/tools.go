@@ -8,6 +8,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	vnet "github.com/v2fly/v2ray-core/v5/common/net"
+	"github.com/v2fly/v2ray-core/v5/transport/internet/tcp"
 )
 
 var anyMethods = []string{
@@ -31,6 +32,19 @@ func isHTTP(peek []byte) bool {
 func isEnglishLetter(b byte) bool {
 	// 检查是否为大写字母或小写字母
 	return (b >= 'A' && b <= 'Z') || (b >= 'a' && b <= 'z')
+}
+
+func GetDestConn(clientConn net.Conn) (net.Conn, error) {
+	var dest vnet.Destination
+	var err error
+
+	dest, err = tcp.GetOriginalDestination(clientConn)
+	if err != nil {
+		logrus.Errorf("failed to get original destination")
+	}
+
+	logrus.Debugf("%s, ip: %s, port: %s", dest.Network, dest.Address.IP().String(), dest.Port)
+	return dialDestination(dest)
 }
 
 func dialDestination(d vnet.Destination) (net.Conn, error) {

@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 ARCH_TYPE=""
 get_arch_type() {
@@ -67,47 +68,84 @@ fi
 # 1. 开启 IP 转发
 echo "正在开启 IP 转发..."
 if ! grep -q "net.ipv4.ip_forward=1" /etc/sysctl.conf; then
-    echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+    echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf || {
+        echo "写入 sysctl.conf 失败"
+        exit 1
+    }
 fi
-sysctl -p
+sysctl -p || {
+    echo "应用 sysctl 配置失败"
+    exit 1
+}
 
 # 2. 下载并安装 uaProxy
 echo "正在下载 uaProxy.tar.gz..."
-# 这里需要根据实际情况修改下载链接
-UaProxy_Name="uaProxy_linux_${ARCH_TYPE}"
+UaProxy_Name="uaProxy_Linux_${ARCH_TYPE}"
 DOWNLOAD_URL="https://github.com/huhu415/uaProxy/releases/latest/download/${UaProxy_Name}.tar.gz"
 
 # 下载
-if ! wget -q "$DOWNLOAD_URL"; then
+wget -q "$DOWNLOAD_URL" || {
     echo "下载失败,请检查网络连接或下载链接是否正确"
     exit 1
-fi
+}
 
-tar -xzf $UaProxy_Name.tar.gz
-cd $UaProxy_Name
+tar -xzf $UaProxy_Name.tar.gz || {
+    echo "解压失败"
+    exit 1
+}
 
-mv uaProxy /usr/sbin/
-chmod +x /usr/sbin/uaProxy
+mv $UaProxy_Name/uaProxy /usr/sbin/ || {
+    echo "移动 uaProxy 到 /usr/sbin/ 失败"
+    exit 1
+}
+chmod +x /usr/sbin/uaProxy || {
+    echo "修改 uaProxy 权限失败"
+    exit 1
+}
 
-mv assets/uaProxy-openwrt /etc/init.d/
-chmod +x /etc/init.d/uaProxy-openwrt
+mv $UaProxy_Name/assets/uaProxy-openwrt /etc/init.d/ || {
+    echo "移动 uaProxy-openwrt 到 /etc/init.d/ 失败"
+    exit 1
+}
+chmod +x /etc/init.d/uaProxy-openwrt || {
+    echo "修改 uaProxy-openwrt 权限失败"
+    exit 1
+}
 
 # 3. 配置 iptables 规则
 echo "正在配置 iptables 规则..."
+iptables -t nat -X uaProxy
+sleep 1
+
 iptables -t nat -N uaProxy
-iptables -t nat -A uaProxy -d 192.168.0.0/16 -j RETURN
-iptables -t nat -A uaProxy -p tcp -j RETURN -m mark --mark 0xff
-iptables -t nat -A uaProxy -p tcp -j REDIRECT --to-ports 12345
-iptables -t nat -A PREROUTING -p tcp -j uaProxy
-iptables -t nat -A OUTPUT -p tcp -j uaProxy
+
+iptables -t nat -A uaProxy -d 192.168.0.0/16 -j RETURN || {
+    echo "添加 iptables 规则失败 (1/6)"
+    exit 1
+}
+iptables -t nat -A uaProxy -p tcp -j RETURN -m mark --mark 0xff || {
+    echo "添加 iptables 规则失败 (2/6)"
+    exit 1
+}
+iptables -t nat -A uaProxy -p tcp -j REDIRECT --to-ports 12345 || {
+    echo "添加 iptables 规则失败 (3/6)"
+    exit 1
+}
+iptables -t nat -A PREROUTING -p tcp -j uaProxy || {
+    echo "添加 iptables 规则失败 (4/6)"
+    exit 1
+}
+iptables -t nat -A OUTPUT -p tcp -j uaProxy || {
+    echo "添加 iptables 规则失败 (5/6)"
+    exit 1
+}
 
 # 启用并启动服务
 echo "正在启用服务..."
 /etc/init.d/uaProxy-openwrt enable
 /etc/init.d/uaProxy-openwrt start
 
-cd ..
-rm -rf $UaProxy_Name
+# rm -rf $UaProxy_Name
 
 echo "安装完成！"
 echo "可以使用 '/etc/init.d/uaProxy-openwrt {start|stop|restart|status}' 来控制服务"

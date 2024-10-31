@@ -9,22 +9,13 @@ import (
 	"uaProxy/bootstrap"
 
 	"github.com/sirupsen/logrus"
-	"github.com/v2fly/v2ray-core/v5/transport/internet/tcp"
 )
 
 func HandleConnection(clientConn net.Conn) {
 	defer clientConn.Close()
-
 	logrus.Debugf("clientConn. remoteAdd: %s", clientConn.RemoteAddr().String())
-	// logrus.Debugf("clientConn. LocalAddr: %s", clientConn.LocalAddr().String())
 
-	d, err := tcp.GetOriginalDestination(clientConn)
-	if err != nil {
-		logrus.Errorf("failed to get original destination")
-	}
-	logrus.Debugf("%s, ip: %s, port: %s", d.Network, d.Address.IP().String(), d.Port)
-
-	serverConn, err := dialDestination(d)
+	serverConn, err := GetDestConn(clientConn)
 	if err != nil {
 		logrus.Error(err)
 		return
