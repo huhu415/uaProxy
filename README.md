@@ -1,11 +1,11 @@
 # uaProxy
 
-uaProxy 是一个基于 Go 的高性能代理程序，能够高效监控和修改 HTTP 流量中的 User-Agent，实现隐蔽网络拓扑，并在高并发环境下保持稳定运行。
+uaProxy 是一个基于 Go 的高性能代理程序，能够高效监控和修改 HTTP 流量中的请求头，实现隐蔽网络拓扑，并在高并发环境下保持稳定运行。
 
 ## 特性
 
 - **高效流量监控**：借鉴 Clash 和 V2Ray 的 `iptables-redir` 方案，uaProxy 能够高效地监控所有网络流量。
-- **统一修改 User-Agent**：通过识别并修改 HTTP 流量中的 `User-Agent` 字段，实现对所有 `HTTP` 请求的修改。
+- **修改HTTP请求头**：可以识别, 记录, 修改 HTTP 流量中的请求头，实现对所有 `HTTP` 请求的修改。
 - **隐藏网络拓扑**：作为代理程序，uaProxy 天生具备隐藏网络拓扑的能力，避免检测到路由器下连接了多个设备。
 - **高并发稳定性**：得益于 Go 语言的高并发性能，uaProxy 能在高负载下保持稳定运行。
 
@@ -43,12 +43,15 @@ curl https://raw.githubusercontent.com/huhu415/uaProxy/refs/heads/main/assets/au
 > 脚本安装只支持`小端`架构, 因为我还没搞明白怎么检测`大端`架构, `大端`机器太少了.
 
 ### 参数说明:
-`--stats` 开启统计信息
-- 不开启(默认): 修改所有`http`流量的`UA`为统一字段.
-- 开启: 在可执行程序同目录下生成一个`stats-config.csv`文件, 里面记录了不同`User-Agent`字段的访问次数.
-  - 如果记录项有`**uaProxy**`前缀, 代表已经检测到特征, 会被修改为统一的UA字段; 否则不会修改.
-  - 建议只有在普通模式有问题时, 再开启统计模式, 以免影响性能和反检测效果.
-
+- `--stats` 开启`User-Agent`统计信息(要在`headers`中有`User-Agent`时才能开启)
+  - 不开启(默认): 修改所有`http`流量的`User-Agent`为统一字段.
+  - 开启: 在可执行程序同目录下生成一个`stats-config.csv`文件, 里面记录了不同`User-Agent`字段的访问次数.
+    - 如果记录项有`**uaProxy**`前缀, 代表已经检测到特征, 会被修改为统一的UA字段; 否则不会修改.
+    - 建议只有在普通模式有问题时, 再开启统计模式, 以免影响性能和反检测效果.
+- `--headers` 需要修改的请求头键值对
+  - 默认参数: `./uaProxy --headers User-Agent=MicroMessenger Client`
+  - 自定义参数: `./uaProxy --headers User-Agent=MicroMessenger Client --headers Host=www.baidu.com`
+    - 会把`User-Agent`字段修改为`MicroMessenger Client`, `Host`字段修改为`www.baidu.com`
 
 ## 测试
 在openwrt上的wan口上使用tcpdump抓10000个包

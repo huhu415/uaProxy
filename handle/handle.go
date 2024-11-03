@@ -42,10 +42,14 @@ func handleHTTPConnection(bufioReader *bufio.Reader, serverConn net.Conn) {
 			return
 		}
 
-		if ua := req.Header.Get("User-Agent"); ua != "" {
-			logrus.Debug(ua)
-			if bootstrap.GiveParserRecord().ParserAndRecord(ua) {
-				req.Header.Set("User-Agent", bootstrap.C.UserAgent)
+		for key, value := range bootstrap.C.Headers {
+			if key == bootstrap.UA {
+				if ua := req.Header.Get(bootstrap.UA); ua != "" && bootstrap.GiveParserRecord().ParserAndRecord(ua) {
+					logrus.Debug(ua)
+					req.Header.Set(key, value)
+				}
+			} else {
+				req.Header.Set(key, value)
 			}
 		}
 

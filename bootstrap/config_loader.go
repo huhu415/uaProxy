@@ -2,7 +2,6 @@ package bootstrap
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -11,13 +10,15 @@ import (
 	"github.com/spf13/viper"
 )
 
+const UA = "User-Agent"
+
 // Config holds the configuration options
 type Config struct {
-	RedirPort   int    `mapstructure:"redir-port"`
-	UserAgent   string `mapstructure:"User-Agent"`
-	Debug       bool   `mapstructure:"debug"`
-	Stats       bool   `mapstructure:"stats"`
-	StatsConfig string `mapstructure:"stats-config"`
+	RedirPort   int               `mapstructure:"redir-port"`
+	Headers     map[string]string `mapstructure:"headers"`
+	Debug       bool              `mapstructure:"debug"`
+	Stats       bool              `mapstructure:"stats"`
+	StatsConfig string            `mapstructure:"stats-config"`
 }
 
 // Global variable to hold the configuration
@@ -37,20 +38,28 @@ func parseFlags() {
 	csvPath := filepath.Join(filepath.Dir(exePath), "stats-config.csv")
 
 	pflag.String("redir-port", "12345", "listen address")
-	pflag.String("User-Agent", "MicroMessenger Client", "User-Agent value")
+	pflag.StringToString("headers", map[string]string{
+		UA: "MicroMessenger Client",
+	}, "custom headers")
 	pflag.Bool("debug", false, "debug mode")
-	pflag.Bool("stats", false, "enable statistics collection")
+	pflag.Bool("stats", false, "enable"+UA+"statistics collection")
 	pflag.String("stats-config", csvPath, "configuration file")
 	pflag.BoolP("version", "v", false, "version information")
 	pflag.CommandLine.SortFlags = false
 	pflag.Parse()
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
+		logrus.Errorf("bind flags error: %+v\n", err)
 		panic(err)
 	}
 
 	if err = viper.Unmarshal(&C); err != nil {
-		log.Printf("unmarshal config file error: %+v\n", err)
+		logrus.Errorf("unmarshal config file error: %+v\n", err)
 		return
+	}
+
+	if err := checkValid(); err != nil {
+		logrus.Errorf("invalid configuration: %v", err)
+		os.Exit(1)
 	}
 
 	if viper.GetBool("version") {
@@ -73,4 +82,11 @@ func initLog() {
 	} else {
 		logrus.SetLevel(logrus.InfoLevel)
 	}
+}
+
+func checkValid() error {
+	if C.Headers[UA] == "" && C.Stats {
+		return fmt.Errorf("User-Agent is required when stats is enabled")
+	}
+	return nil
 }

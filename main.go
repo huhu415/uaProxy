@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 
 	"uaProxy/bootstrap"
 	"uaProxy/handle"
@@ -41,8 +42,13 @@ func server(ctx context.Context) {
 	}
 	defer listener.Close()
 
-	fmt.Printf("Proxy server listening on port: \033[1;34m%d\033[0m, UA is set to \033[1;34m%s\033[0m\n",
-		bootstrap.C.RedirPort, bootstrap.C.UserAgent)
+	headersList := []string{}
+	for key, value := range bootstrap.C.Headers {
+		headersList = append(headersList, (fmt.Sprintf("\033[1;34m%s\033[0m: \033[1;34m%s\033[0m", key, value)))
+	}
+
+	fmt.Printf("uaProxy server listening on port: \033[1;34m%d\033[0m, stats mode is \033[1;34m%v\033[0m, Headers: {%s}\n",
+		bootstrap.C.RedirPort, bootstrap.C.Stats, strings.Join(headersList, ", "))
 
 	for {
 		select {
