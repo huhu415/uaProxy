@@ -11,22 +11,50 @@ import (
 	"github.com/v2fly/v2ray-core/v5/transport/internet/tcp"
 )
 
-var anyMethods = []string{
-	http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch,
-	http.MethodHead, http.MethodOptions, http.MethodDelete,
-	http.MethodTrace, "PROPFIND", "PROPPATCH", "MKCOL", "COPY", "MOVE", "LOCK", "UNLOCK",
-	http.MethodConnect,
+var anyMethodSet = map[string]struct{}{
+	http.MethodGet:     {},
+	http.MethodPost:    {},
+	http.MethodPut:     {},
+	http.MethodPatch:   {},
+	http.MethodHead:    {},
+	http.MethodOptions: {},
+	http.MethodDelete:  {},
+	http.MethodTrace:   {},
+	http.MethodConnect: {},
+	"PROPFIND":         {},
+	"PROPPATCH":        {},
+	"MKCOL":            {},
+	"COPY":             {},
+	"MOVE":             {},
+	"LOCK":             {},
+	"UNLOCK":           {},
+	"LINK":             {},
+	"UNLINK":           {},
+	"PURGE":            {},
+	"VIEW":             {},
+	"REPORT":           {},
+	"SEARCH":           {},
+	"CHECKOUT":         {},
+	"CHECKIN":          {},
+	"MERGE":            {},
+	"SUBSCRIBE":        {},
+	"UNSUBSCRIBE":      {},
+	"NOTIFY":           {},
 }
 
 func isHTTP(peek []byte) bool {
 	tempPeekString := strings.ToUpper(string(peek))
 	logrus.Debug(tempPeekString)
-	for _, m := range anyMethods {
-		if strings.HasPrefix(tempPeekString, m) {
-			return true
-		}
+
+	first, _, ok := strings.Cut(tempPeekString, " ")
+	if !ok {
+		return false
 	}
-	return false
+
+	if _, ok := anyMethodSet[first]; !ok {
+		return false
+	}
+	return true
 }
 
 func isEnglishLetter(b byte) bool {
