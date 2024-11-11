@@ -114,6 +114,7 @@ chmod +x /etc/init.d/uaProxy-openwrt || {
 
 # 3. 配置 iptables 规则
 echo "正在配置 iptables 规则..."
+# iptables -t nat -F // 清空 nat 表
 iptables -t nat -X uaProxy
 sleep 1
 
