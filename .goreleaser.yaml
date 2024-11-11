@@ -60,7 +60,8 @@ release:
   header: |
     ## 🥳Changes
 
-    - 增加自动安装脚本, 一键安装
+    - 加强了一点性能
+    - 增加卸载功能
 
     ```sh
     tar -xzvf uaProxy-linux-xxxxxxx.tar.gz # 解压

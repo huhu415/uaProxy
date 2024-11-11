@@ -1,5 +1,4 @@
-#!/bin/bash
-set -e
+#!/bin/sh
 
 ARCH_TYPE=""
 get_arch_type() {
@@ -112,13 +111,17 @@ chmod +x /etc/init.d/uaProxy-openwrt || {
     exit 1
 }
 
+rm -rf $UaProxy_Name
+rm $UaProxy_Name.tar.gz
+
+
 # 3. 配置 iptables 规则
 echo "正在配置 iptables 规则..."
 # iptables -t nat -F // 清空 nat 表
-iptables -t nat -X uaProxy
+# iptables -t nat -X uaProxy
 sleep 1
 
-iptables -t nat -N uaProxy
+iptables -t nat -L uaProxy >/dev/null 2>&1 || iptables -t nat -N uaProxy
 
 iptables -t nat -A uaProxy -d 192.168.0.0/16 -j RETURN || {
     echo "添加 iptables 规则失败 (1/6)"
@@ -145,8 +148,6 @@ iptables -t nat -A OUTPUT -p tcp -j uaProxy || {
 echo "正在启用服务..."
 /etc/init.d/uaProxy-openwrt enable
 /etc/init.d/uaProxy-openwrt start
-
-# rm -rf $UaProxy_Name
 
 echo "安装完成！"
 echo "可以使用 '/etc/init.d/uaProxy-openwrt {start|stop|restart|status}' 来控制服务"

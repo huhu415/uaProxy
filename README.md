@@ -38,9 +38,14 @@ iptables -t nat -A OUTPUT -p tcp -j uaProxy # 对本机进行透明代理, 可�
 
 ### 脚本安装
 ```sh
-curl https://raw.githubusercontent.com/huhu415/uaProxy/refs/heads/main/assets/autoInstall.sh | sh
+curl https://raw.githubusercontent.com/huhu415/uaProxy/refs/heads/main/assets/Install.sh | sh
 ```
 > 脚本安装只支持`小端`架构, 因为我还没搞明白怎么检测`大端`架构, `大端`机器太少了.
+
+### 脚本卸载
+```sh
+curl https://raw.githubusercontent.com/huhu415/uaProxy/refs/heads/main/assets/UnInstall.sh | sh
+```
 
 ### 参数说明:
 - `--stats` 开启统计信息
