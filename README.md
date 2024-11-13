@@ -16,14 +16,21 @@ uaProxy 是一个基于 Go 的高性能代理程序，能够高效监控和修�
 1. 网关设备开启 IP 转发。
 在 `/etc/sysctl.conf` 文件添加一行 `net.ipv4.ip_forward=1` ，执行下列命令生效：`sysctl -p`
 
-2. 运行uaProxy (所有linux都可以用, 这里详细讲openWrt)
-    - 下载[相应](https://github.com/huhu415/uaProxy/releases)的压缩包, `tar -xzvf uaProxy-xxx-xxx`解压后
-      - 把可执行程序放到`/usr/sbin`目录里面
-      - 把[脚本文件](assets/uaProxy-openwrt)放到`/etc/init.d`目录里面
+2. 运行uaProxy
+  - 下载[相应](https://github.com/huhu415/uaProxy/releases)的压缩包, `tar -xzvf uaProxy-xxx-xxx`解压后
+    - 把可执行程序放到`/usr/sbin`目录里面
+  - 如果是procd(OpenWrt)**选一个即可**
+    - 把[脚本文件](shell/uaProxy.procd)放到`/etc/init.d`目录里面
     - 执行`chmod +x /etc/init.d/uaProxy-openwrt`, 赋予执行权限
       - 执行`/etc/init.d/uaProxy-openwrt enable`, 开机自启
       - 执行`/etc/init.d/uaProxy-openwrt start`, 启动服务
       - (可选)执行`logread | grep uaProxy` 查看日志; 同时也可以登陆web页面, 在`状态-系统日志`里面看
+  - 如果是systemd(Linux)**选一个即可**
+    - 把[脚本文件](shell/uaProxy.service)放到`/etc/systemd/system`目录里面
+    - 使用 `systemctl {start|stop|restart} uaProxy` 控制服务
+    - 使用 `systemctl enable uaProxy` 开机自启
+    - (可选)使用 `systemctl status uaProxy.service` 查看日志
+
 
 3. 为了实现所有TCP流量会经过uaProxy, iptables要这样设置
 ```sh
@@ -36,15 +43,15 @@ iptables -t nat -A PREROUTING -p tcp -j uaProxy # 对局域网其他设备进行
 iptables -t nat -A OUTPUT -p tcp -j uaProxy # 对本机进行透明代理, 可以不加, 建议加
 ```
 
-### 脚本安装
+### 脚本
+安装:
 ```sh
-curl https://raw.githubusercontent.com/huhu415/uaProxy/refs/heads/main/assets/Install.sh | sh
+curl https://raw.githubusercontent.com/huhu415/uaProxy/refs/heads/main/shell/Install.sh | sh
 ```
-> 脚本安装只支持`小端`架构, 因为我还没搞明白怎么检测`大端`架构, `大端`机器太少了.
 
-### 脚本卸载
+卸载:
 ```sh
-curl https://raw.githubusercontent.com/huhu415/uaProxy/refs/heads/main/assets/UnInstall.sh | sh
+curl https://raw.githubusercontent.com/huhu415/uaProxy/refs/heads/main/shell/UnInstall.sh | sh
 ```
 
 ### 参数说明:

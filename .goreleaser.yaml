@@ -46,8 +46,7 @@ archives:
     files:
       - LICENSE
       - README.md
-      - assets/FAQ.md
-      - assets/uaProxy-openwrt
+      - shell
 checksum:
   name_template: "checksums.txt"
 

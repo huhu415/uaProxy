@@ -1,0 +1,13 @@
+[Unit]
+Description = uaProxy server
+After = network.target syslog.target
+Wants = network.target
+
+[Service]
+Type = simple
+# 启动uaProxy的命令, 假设有环境变量可以直接使用
+# 否则改成绝对路径
+ExecStart = uaProxy
+
+[Install]
+WantedBy = multi-user.target
