@@ -59,8 +59,7 @@ release:
   header: |
     ## 🥳Changes
 
-    - 加强了一点性能
-    - 增加卸载功能
+    - 增加了http to websocket功能
 
     ```sh
     tar -xzvf uaProxy-linux-xxxxxxx.tar.gz # 解压

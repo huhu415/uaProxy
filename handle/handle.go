@@ -53,7 +53,14 @@ func handleHTTPConnection(bufioReader *bufio.Reader, serverConn net.Conn) {
 			logrus.Error(er)
 			return
 		}
+
+		if req.Header.Get("Upgrade") == "websocket" && req.Header.Get("Connection") == "Upgrade" {
+			logrus.Debug("this is websocket request")
+			break
+		}
 	}
+
+	handleNonHTTPConnection(bufioReader, serverConn)
 }
 
 func handleNonHTTPConnection(bufioReader *bufio.Reader, serverConn net.Conn) {
