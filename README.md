@@ -12,7 +12,7 @@ uaProxy 是一个基于 Go 的高性能代理程序，能够高效监控和修�
 ![uaProxy](assets/uaProxy.png)
 
 ## 安装与使用
-### 手动安装
+### 手动安装(推荐)
 1. 网关设备开启 IP 转发。
 在 `/etc/sysctl.conf` 文件添加一行 `net.ipv4.ip_forward=1` ，执行下列命令生效：`sysctl -p`
 
@@ -27,9 +27,9 @@ uaProxy 是一个基于 Go 的高性能代理程序，能够高效监控和修�
       - (可选)执行`logread | grep uaProxy` 查看日志; 同时也可以登陆web页面, 在`状态-系统日志`里面看
   - 如果是systemd(Linux)**选一个即可**
     - 把[脚本文件](shell/uaProxy.service)放到`/etc/systemd/system`目录里面
-    - 使用 `systemctl {start|stop|restart} uaProxy` 控制服务
-    - 使用 `systemctl enable uaProxy` 开机自启
-    - (可选)使用 `systemctl status uaProxy.service` 查看日志
+      - 使用 `systemctl {start|stop|restart} uaProxy` 控制服务
+      - 使用 `systemctl enable uaProxy` 开机自启
+      - (可选)使用 `systemctl status uaProxy.service` 查看日志
 
 
 3. 为了实现所有TCP流量会经过uaProxy, iptables要这样设置
@@ -42,6 +42,7 @@ iptables -t nat -A uaProxy -p tcp -j REDIRECT --to-ports 12345 # 其余流量转
 iptables -t nat -A PREROUTING -p tcp -j uaProxy # 对局域网其他设备进行透明代理
 iptables -t nat -A OUTPUT -p tcp -j uaProxy # 对本机进行透明代理, 可以不加, 建议加
 ```
+> 设置前, 确保已经清空了`iptables`规则, 以免影响正常使用: `iptables -t nat -F`
 
 ### 脚本
 安装:
@@ -56,10 +57,11 @@ curl https://raw.githubusercontent.com/huhu415/uaProxy/refs/heads/main/shell/UnI
 
 ### 参数说明:
 - `--stats` 开启统计信息
-  - 不开启(默认): 修改所有`http`流量的`UA`为统一字段.
+  - 不开启(默认): 修改所有`http`流量的`User-Agent`为统一字段.
   - 开启: 在可执行程序同目录下生成一个`stats-config.csv`文件, 里面记录了不同`User-Agent`字段的访问次数.
     - 如果记录项有`**uaProxy**`前缀, 代表已经检测到特征, 会被修改为统一的UA字段; 否则不会修改.
     - 建议只有在普通模式有问题时, 再开启统计模式, 以免影响性能和反检测效果.
+- `--User-Agent` 可以自定义想要修改后的字段, 默认是`MicroMessenger Client`
 
 
 ## 测试
