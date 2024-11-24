@@ -40,7 +40,7 @@ iptables -t nat -A uaProxy -p tcp -j RETURN -m mark --mark 0xff
 # 直连 SO_MARK 为 0xff 的流量(0xff 是 16 进制数，数值上等同与上面配置的 255)，此规则目的是避免代理本机(网关)流量出现回环问题
 iptables -t nat -A uaProxy -p tcp -j REDIRECT --to-ports 12345 # 其余流量转发到 12345 端口（即 uaProxy默认开启的redir-port）
 iptables -t nat -A PREROUTING -p tcp -j uaProxy # 对局域网其他设备进行透明代理
-iptables -t nat -A OUTPUT -p tcp -j uaProxy # 对本机进行透明代理, 可以不加, 建议加
+iptables -t nat -A OUTPUT -p tcp -j uaProxy # 对本机进行透明代理. 可以不加, 建议加, 加之后nmap等类似工具会失效
 ```
 > 设置前, 确保已经清空了`iptables`规则, 以免影响正常使用: `iptables -t nat -F`
 

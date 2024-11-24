@@ -11,9 +11,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const PEEKSIZE = 8 // 不能太小, 如果是1的话, 容易全部都判定为http方法
+
 func HandleConnection(clientConn net.Conn) {
 	defer clientConn.Close()
-	logrus.Debugf("clientConn. remoteAdd: %s", clientConn.RemoteAddr().String())
+	// logrus.Debugf("clientConn. remoteAdd: %s", clientConn.RemoteAddr().String())
 
 	serverConn, err := GetDestConn(clientConn)
 	if err != nil {
@@ -23,11 +25,11 @@ func HandleConnection(clientConn net.Conn) {
 	defer serverConn.Close()
 
 	bufioReader := bufio.NewReader(clientConn)
-	peekBuff, _ := bufioReader.Peek(10)
-	logrus.Debug(string(peekBuff))
+	peekBuff, _ := bufioReader.Peek(PEEKSIZE)
+	logrus.Debugf("locationIp: %s, remoteIp: %s, peekBuff: %v", clientConn.RemoteAddr().String(), serverConn.RemoteAddr().String(), peekBuff)
 	go io.Copy(clientConn, serverConn)
 
-	if len(peekBuff) > 0 && isEnglishLetter(peekBuff[0]) && isHTTP(peekBuff) {
+	if len(peekBuff) > 0 && isEnglishBigLetter(peekBuff[0]) && isHTTP(peekBuff) {
 		handleHTTPConnection(bufioReader, serverConn)
 	} else {
 		handleNonHTTPConnection(bufioReader, serverConn)

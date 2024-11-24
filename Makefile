@@ -1,6 +1,6 @@
 LDFLAGS := -s -w
 
-VERSION ?= 1.0.0
+VERSION ?= 1.8
 BUILD_DATE := $(shell date +%Y-%m-%dT%H:%M:%S)
 GIT_COMMIT := $(shell git rev-parse --short HEAD)  $(shell git log -1 --pretty=%s)
 

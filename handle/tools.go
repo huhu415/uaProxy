@@ -10,55 +10,62 @@ import (
 	"github.com/v2fly/v2ray-core/v5/transport/internet/tcp"
 )
 
-var anyMethodSet = map[string]struct{}{
-	http.MethodGet:     {},
-	http.MethodPost:    {},
-	http.MethodPut:     {},
-	http.MethodPatch:   {},
-	http.MethodHead:    {},
-	http.MethodOptions: {},
-	http.MethodDelete:  {},
-	http.MethodTrace:   {},
-	http.MethodConnect: {},
-	"PROPFIND":         {},
-	"PROPPATCH":        {},
-	"MKCOL":            {},
-	"COPY":             {},
-	"MOVE":             {},
-	"LOCK":             {},
-	"UNLOCK":           {},
-	"LINK":             {},
-	"UNLINK":           {},
-	"PURGE":            {},
-	"VIEW":             {},
-	"REPORT":           {},
-	"SEARCH":           {},
-	"CHECKOUT":         {},
-	"CHECKIN":          {},
-	"MERGE":            {},
-	"SUBSCRIBE":        {},
-	"UNSUBSCRIBE":      {},
-	"NOTIFY":           {},
+var anyMethod = [][]byte{
+	[]byte(http.MethodGet),
+	[]byte(http.MethodPost),
+	[]byte(http.MethodPut),
+	[]byte(http.MethodPatch),
+	[]byte(http.MethodHead),
+	[]byte(http.MethodOptions),
+	[]byte(http.MethodDelete),
+	[]byte(http.MethodTrace),
+	[]byte(http.MethodConnect),
+	[]byte("PROPFIND"),
+	[]byte("PROPPATCH"),
+	[]byte("MKCOL"),
+	[]byte("COPY"),
+	[]byte("MOVE"),
+	[]byte("LOCK"),
+	[]byte("UNLOCK"),
+	[]byte("LINK"),
+	[]byte("UNLINK"),
+	[]byte("PURGE"),
+	[]byte("VIEW"),
+	[]byte("REPORT"),
+	[]byte("SEARCH"),
+	[]byte("CHECKOUT"),
+	[]byte("CHECKIN"),
+	[]byte("MERGE"),
+	[]byte("SUBSCRIBE"),
+	[]byte("UNSUBSCRIBE"),
+	[]byte("NOTIFY"),
 }
 
 func isHTTP(peek []byte) bool {
-	tempPeekString := strings.ToUpper(string(peek))
-	logrus.Debug(tempPeekString)
-
-	first, _, ok := strings.Cut(tempPeekString, " ")
-	if !ok {
+	if len(peek) == 0 {
 		return false
 	}
 
-	if _, ok := anyMethodSet[first]; !ok {
-		return false
+	for _, method := range anyMethod {
+		if compareMethod(peek, method) {
+			return true
+		}
+	}
+	return false
+}
+
+func compareMethod(peek, method []byte) bool {
+	for i := 0; i < len(peek) && i < len(method); i++ {
+		if peek[i] != method[i] {
+			return false
+		}
 	}
 	return true
 }
 
-func isEnglishLetter(b byte) bool {
-	// 检查是否为大写字母或小写字母
-	return (b >= 'A' && b <= 'Z') || (b >= 'a' && b <= 'z')
+func isEnglishBigLetter(b byte) bool {
+	// 检查是否为大写字母
+	return (b >= 'A' && b <= 'Z')
 }
 
 func GetDestConn(clientConn net.Conn) (net.Conn, error) {
@@ -68,9 +75,10 @@ func GetDestConn(clientConn net.Conn) (net.Conn, error) {
 	dest, err = tcp.GetOriginalDestination(clientConn)
 	if err != nil {
 		logrus.Errorf("failed to get original destination")
+		return nil, err
 	}
 
-	logrus.Debugf("%s, ip: %s, port: %s", dest.Network, dest.Address.IP().String(), dest.Port)
+	logrus.Debugf("clientIp: %s, remoteIp: %s:%s", clientConn.RemoteAddr().String(), dest.Address.IP().String(), dest.Port)
 	return dialDestination(dest)
 }
 

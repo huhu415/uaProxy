@@ -59,7 +59,8 @@ release:
   header: |
     ## 🥳Changes
 
-    - 增加了http to websocket功能
+    - 修复了pg数据库连接不上问题
+    - 增加启动时版本显示
 
     ```sh
     tar -xzvf uaProxy-linux-xxxxxxx.tar.gz # 解压

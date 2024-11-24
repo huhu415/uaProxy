@@ -41,8 +41,8 @@ func server(ctx context.Context) {
 	}
 	defer listener.Close()
 
-	fmt.Printf("Proxy server listening on port: \033[1;34m%d\033[0m, UA is set to \033[1;34m%s\033[0m\n",
-		bootstrap.C.RedirPort, bootstrap.C.UserAgent)
+	fmt.Printf("Proxy\033[1;34mV%s\033[0m listening on port: \033[1;34m%d\033[0m, UA is set to \033[1;34m%s\033[0m\n",
+		bootstrap.Version, bootstrap.C.RedirPort, bootstrap.C.UserAgent)
 
 	for {
 		select {
