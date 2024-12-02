@@ -12,13 +12,16 @@ uaProxy 是一个基于 Go 的高性能代理程序，能够高效监控和修�
 ![uaProxy](assets/uaProxy.png)
 
 ## 安装与使用
-### 手动安装(推荐)
+### ipk安装(推荐)
+下载并安装[相应](https://github.com/huhu415/uaProxy/releases)架构的ipk包
+
+### 手动安装
 1. 网关设备开启 IP 转发。
 在 `/etc/sysctl.conf` 文件添加一行 `net.ipv4.ip_forward=1` ，执行下列命令生效：`sysctl -p`
 
 2. 运行uaProxy
   - 下载[相应](https://github.com/huhu415/uaProxy/releases)的压缩包, `tar -xzvf uaProxy-xxx-xxx`解压后
-    - 把可执行程序放到`/usr/sbin`目录里面
+    - 把可执行程序放到`/usr/bin`目录里面
   - 如果是procd(OpenWrt)**选一个即可**
     - 把[脚本文件](shell/uaProxy.procd)放到`/etc/init.d`目录里面
     - 执行`chmod +x /etc/init.d/uaProxy-openwrt`, 赋予执行权限
@@ -44,16 +47,6 @@ iptables -t nat -A OUTPUT -p tcp -j uaProxy # 对本机进行透明代理. 可�
 ```
 > 设置前, 确保已经清空了`iptables`规则, 以免影响正常使用: `iptables -t nat -F`
 
-### 脚本
-安装:
-```sh
-curl https://raw.githubusercontent.com/huhu415/uaProxy/refs/heads/main/shell/Install.sh | sh
-```
-
-卸载:
-```sh
-curl https://raw.githubusercontent.com/huhu415/uaProxy/refs/heads/main/shell/UnInstall.sh | sh
-```
 
 ### 参数说明:
 - `--stats` 开启统计信息

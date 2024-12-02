@@ -1,30 +1,30 @@
-## ❓Questions
+## ❓常见问题
 
-### 如何选择Assets版本？
+### 如何选择 Assets 版本？
 
-- **386**: 32位的x86架构处理器
-- **amd64**: 64位的x86架构处理器（也称为x86_64）
-- **arm**: 32位的ARM架构处理器
-- **arm64**: 64位的ARM架构处理器（也称为AArch64）
-- **loong64**: 龙芯处理器的64位架构
-- **mips**: 32位的大端序MIPS处理器
-- **mipsle**: 32位的小端序MIPS处理器
-- **mips64**: 64位的大端序MIPS处理器
-- **mips64le**: 64位的小端序MIPS处理器
-- **ppc64**: 64位的大端序PowerPC处理器
-- **ppc64le**: 64位的小端序PowerPC处理器
+1. **确认 CPU 架构**：使用命令 `uname -m` 查看是arm64, arm, mips, mips64等
+2. **确认 CPU 大端小段**：一般都是大端, 很少很少有小端, 除非是单片机这种, 可咨询 [ChatGPT](https://chatgpt.com) 或 [kimi](https://kimi.moonshot.cn/chat/)。
 
-> 注意, 所有Assets都是Linux版本的, darwin,windows,freebsd等等没有iptables, 无法使用
+处理器架构对应版本：
 
-### 我是路由器, 选择哪个版本？
+| 版本         | 处理器架构           |
+| ------------ | -------------------- |
+| **386**      | 32 位 x86            |
+| **amd64**    | 64 位 x86（x86_64）  |
+| **arm**      | 32 位 ARM            |
+| **arm64**    | 64 位 ARM（AArch64） |
+| **loong64**  | 64 位龙芯            |
+| **mips**     | 32 位大端 MIPS       |
+| **mipsle**   | 32 位小端 MIPS       |
+| **mips64**   | 64 位大端 MIPS       |
+| **mips64le** | 64 位小端 MIPS       |
+| **ppc64**    | 64 位大端 PowerPC    |
+| **ppc64le**  | 64 位小端 PowerPC    |
 
-先查一下自己的cpu的bits, 是32位还是64位的. _这就可以去掉一半了_
-
-再看看是什么架构, 如果是硬路由, 比如ac2100这种, 一般都是`MIPS`类型的
-  - 如果是`MIPS`类型的, _那么就看看是大端序还是小端序的, 可以去问[ChatGpt](https://chatgpt.com)或者[kimi](https://kimi.moonshot.cn/chat/)_
-  - 如果不是, 那就是`ARM`或者`x86`的
+> 注意：所有 Assets 均为 Linux 版本，因 darwin、windows、freebsd 等系统没有 iptables，无法使用。
 
 ### 校园网常见检测方式
+
 - [x] TTL
   - ```sh
     iptables -t mangle -A POSTROUTING -j TTL --ttl-set 64 # 修改出口 TTL 为 64

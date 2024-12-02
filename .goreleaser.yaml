@@ -39,14 +39,35 @@ archives:
   - format: tar.gz
     wrap_in_directory: true # wrap the archive in a directory named after the project
     # this name template makes the OS and Arch compatible with the results of `uname`.
-    name_template: >-
-      {{ .ProjectName }}_
-      {{- title .Os }}_
-      {{- .Arch }}
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
       - shell
+
+nfpms:
+  - id: uaproxy-ipk
+    package_name: uaproxy
+    file_name_template: "{{ .ProjectName }}_openwrt_{{ .Arch }}"
+    vendor: huhu415
+    homepage: https://github.com/huhu415/uaProxy
+    maintainer: huhu415 <your-email@example.com>
+    description: UA Proxy Service
+    license: MIT
+    formats:
+      - ipk
+    contents:
+      - src: ./shell/uaProxy.procd
+        dst: /etc/init.d/
+        type: config
+        file_info:
+          mode: 0755 # rwxr-xr-x 权限
+    scripts:
+      preinstall: "shell/ipk/postinstall.sh"
+      postinstall: "shell/ipk/postinstall.sh"
+      preremove: "shell/ipk/preremove.sh"
+      postremove: "shell/ipk/postremove.sh"
+
 checksum:
   name_template: "checksums.txt"
 
@@ -59,8 +80,7 @@ release:
   header: |
     ## 🥳Changes
 
-    - 修复了pg数据库连接不上问题
-    - 增加启动时版本显示
+    - 增加了对OpenWrt的ipk安装方法
 
     ```sh
     tar -xzvf uaProxy-linux-xxxxxxx.tar.gz # 解压
